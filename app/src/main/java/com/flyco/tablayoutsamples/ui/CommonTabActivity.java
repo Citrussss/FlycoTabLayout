@@ -3,11 +3,12 @@ package com.flyco.tablayoutsamples.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
 import com.flyco.tablayout.CommonTabLayout;
@@ -16,6 +17,7 @@ import com.flyco.tablayout.listener.OnTabSelectListener;
 import com.flyco.tablayout.utils.UnreadMsgUtils;
 import com.flyco.tablayout.widget.MsgView;
 import com.flyco.tablayoutsamples.R;
+import com.flyco.tablayoutsamples.adapter.SimpleHome2Adapter;
 import com.flyco.tablayoutsamples.entity.TabEntity;
 import com.flyco.tablayoutsamples.utils.ViewFindUtils;
 
@@ -36,7 +38,7 @@ public class CommonTabActivity extends AppCompatActivity {
             R.mipmap.tab_contact_select, R.mipmap.tab_more_select};
     private ArrayList<CustomTabEntity> mTabEntities = new ArrayList<>();
     private View mDecorView;
-    private ViewPager mViewPager;
+    private ViewPager2 mViewPager;
     private CommonTabLayout mTabLayout_1;
     private CommonTabLayout mTabLayout_2;
     private CommonTabLayout mTabLayout_3;
@@ -63,7 +65,9 @@ public class CommonTabActivity extends AppCompatActivity {
 
         mDecorView = getWindow().getDecorView();
         mViewPager = ViewFindUtils.find(mDecorView, R.id.vp_2);
-        mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
+        SimpleHome2Adapter adapter = new SimpleHome2Adapter(getSupportFragmentManager(), getLifecycle());
+        adapter.setData(mFragments);
+        mViewPager.setAdapter(adapter);
         /** with nothing */
         mTabLayout_1 = ViewFindUtils.find(mDecorView, R.id.tl_1);
         /** with ViewPager */
@@ -158,7 +162,7 @@ public class CommonTabActivity extends AppCompatActivity {
             }
         });
 
-        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 

@@ -2,17 +2,18 @@ package com.flyco.tablayoutsamples.ui;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
 import com.flyco.tablayout.SegmentTabLayout;
 import com.flyco.tablayout.listener.OnTabSelectListener;
 import com.flyco.tablayout.widget.MsgView;
 import com.flyco.tablayoutsamples.R;
+import com.flyco.tablayoutsamples.adapter.SimpleHome2Adapter;
 import com.flyco.tablayoutsamples.utils.ViewFindUtils;
 
 import java.util.ArrayList;
@@ -69,9 +70,10 @@ public class SegmentTabActivity extends AppCompatActivity {
     }
 
     private void tl_3() {
-        final ViewPager vp_3 = ViewFindUtils.find(mDecorView, R.id.vp_2);
-        vp_3.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
-
+        final ViewPager2 vp_3 = ViewFindUtils.find(mDecorView, R.id.vp_2);
+        SimpleHome2Adapter adapter = new SimpleHome2Adapter(getSupportFragmentManager(), getLifecycle());
+        adapter.setData(mFragments);
+        vp_3.setAdapter(adapter);
         mTabLayout_3.setTabData(mTitles_3);
         mTabLayout_3.setOnTabSelectListener(new OnTabSelectListener() {
             @Override
@@ -84,7 +86,7 @@ public class SegmentTabActivity extends AppCompatActivity {
             }
         });
 
-        vp_3.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        vp_3.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 

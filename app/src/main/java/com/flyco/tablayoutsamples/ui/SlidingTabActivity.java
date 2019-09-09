@@ -3,11 +3,11 @@ package com.flyco.tablayoutsamples.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
@@ -15,6 +15,7 @@ import com.flyco.tablayout.SlidingTabLayout;
 import com.flyco.tablayout.listener.OnTabSelectListener;
 import com.flyco.tablayout.widget.MsgView;
 import com.flyco.tablayoutsamples.R;
+import com.flyco.tablayoutsamples.adapter.SimpleHome2Adapter;
 import com.flyco.tablayoutsamples.utils.ViewFindUtils;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class SlidingTabActivity extends AppCompatActivity implements OnTabSelect
             "热门", "iOS", "Android"
             , "前端", "后端", "设计", "工具资源"
     };
-    private MyPagerAdapter mAdapter;
+    private SimpleHome2Adapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +40,9 @@ public class SlidingTabActivity extends AppCompatActivity implements OnTabSelect
 
 
         View decorView = getWindow().getDecorView();
-        ViewPager vp = ViewFindUtils.find(decorView, R.id.vp);
-        mAdapter = new MyPagerAdapter(getSupportFragmentManager());
+        ViewPager2 vp = ViewFindUtils.find(decorView, R.id.vp);
+        mAdapter = new SimpleHome2Adapter(getSupportFragmentManager(),this.getLifecycle());
+        mAdapter.setData(mFragments);
         vp.setAdapter(mAdapter);
 
         /** 默认 */
@@ -64,17 +66,17 @@ public class SlidingTabActivity extends AppCompatActivity implements OnTabSelect
         /** indicator圆角色块 */
         SlidingTabLayout tabLayout_10 = ViewFindUtils.find(decorView, R.id.tl_10);
 
-        tabLayout_1.setViewPager(vp);
-        tabLayout_2.setViewPager(vp);
+        tabLayout_1.setViewPager2(vp,mTitles);
+        tabLayout_2.setViewPager2(vp,mTitles);
         tabLayout_2.setOnTabSelectListener(this);
-        tabLayout_3.setViewPager(vp);
-        tabLayout_4.setViewPager(vp);
-        tabLayout_5.setViewPager(vp);
-        tabLayout_6.setViewPager(vp);
-        tabLayout_7.setViewPager(vp, mTitles);
-        tabLayout_8.setViewPager(vp, mTitles, this, mFragments);
-        tabLayout_9.setViewPager(vp);
-        tabLayout_10.setViewPager(vp);
+        tabLayout_3.setViewPager2(vp,mTitles);
+        tabLayout_4.setViewPager2(vp,mTitles);
+        tabLayout_5.setViewPager2(vp,mTitles);
+        tabLayout_6.setViewPager2(vp,mTitles);
+        tabLayout_7.setViewPager2(vp, mTitles);
+        tabLayout_8.setViewPager2(vp, mTitles, this, mFragments);
+        tabLayout_9.setViewPager2(vp,mTitles);
+        tabLayout_10.setViewPager2(vp,mTitles);
 
         vp.setCurrentItem(4);
 

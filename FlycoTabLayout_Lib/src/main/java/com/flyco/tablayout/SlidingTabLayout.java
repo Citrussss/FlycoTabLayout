@@ -10,12 +10,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -26,6 +20,17 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.Lifecycle;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
 import com.flyco.tablayout.listener.OnTabSelectListener;
 import com.flyco.tablayout.utils.UnreadMsgUtils;
 import com.flyco.tablayout.widget.MsgView;
@@ -33,18 +38,25 @@ import com.flyco.tablayout.widget.MsgView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-/** 滑动TabLayout,对于ViewPager的依赖性强 */
+/**
+ * 滑动TabLayout,对于ViewPager的依赖性强
+ */
 public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.OnPageChangeListener {
     private Context mContext;
     private ViewPager mViewPager;
+    private ViewPager2 mViewPager2;
     private ArrayList<String> mTitles;
     private LinearLayout mTabsContainer;
     private int mCurrentTab;
     private float mCurrentPositionOffset;
     private int mTabCount;
-    /** 用于绘制显示器 */
+    /**
+     * 用于绘制显示器
+     */
     private Rect mIndicatorRect = new Rect();
-    /** 用于实现滚动居中 */
+    /**
+     * 用于实现滚动居中
+     */
     private Rect mTabRect = new Rect();
     private GradientDrawable mIndicatorDrawable = new GradientDrawable();
 
@@ -61,7 +73,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
     private boolean mTabSpaceEqual;
     private float mTabWidth;
 
-    /** indicator */
+    /**
+     * indicator
+     */
     private int mIndicatorColor;
     private float mIndicatorHeight;
     private float mIndicatorWidth;
@@ -73,17 +87,23 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
     private int mIndicatorGravity;
     private boolean mIndicatorWidthEqualTitle;
 
-    /** underline */
+    /**
+     * underline
+     */
     private int mUnderlineColor;
     private float mUnderlineHeight;
     private int mUnderlineGravity;
 
-    /** divider */
+    /**
+     * divider
+     */
     private int mDividerColor;
     private float mDividerWidth;
     private float mDividerPadding;
 
-    /** title */
+    /**
+     * title
+     */
     private static final int TEXT_BOLD_NONE = 0;
     private static final int TEXT_BOLD_WHEN_SELECT = 1;
     private static final int TEXT_BOLD_BOTH = 2;
@@ -96,6 +116,8 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
     private int mLastScrollX;
     private int mHeight;
     private boolean mSnapOnTabClick;
+
+    private OnPageChangeCallback mOnPageChangeCallback;
 
     public SlidingTabLayout(Context context) {
         this(context, null, 0);
@@ -168,7 +190,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         ta.recycle();
     }
 
-    /** 关联ViewPager */
+    /**
+     * 关联ViewPager
+     */
     public void setViewPager(ViewPager vp) {
         if (vp == null || vp.getAdapter() == null) {
             throw new IllegalStateException("ViewPager or ViewPager adapter can not be NULL !");
@@ -181,7 +205,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         notifyDataSetChanged();
     }
 
-    /** 关联ViewPager,用于不想在ViewPager适配器中设置titles数据的情况 */
+    /**
+     * 关联ViewPager,用于不想在ViewPager适配器中设置titles数据的情况
+     */
     public void setViewPager(ViewPager vp, String[] titles) {
         if (vp == null || vp.getAdapter() == null) {
             throw new IllegalStateException("ViewPager or ViewPager adapter can not be NULL !");
@@ -204,7 +230,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         notifyDataSetChanged();
     }
 
-    /** 关联ViewPager,用于连适配器都不想自己实例化的情况 */
+    /**
+     * 关联ViewPager,用于连适配器都不想自己实例化的情况
+     */
     public void setViewPager(ViewPager vp, String[] titles, FragmentActivity fa, ArrayList<Fragment> fragments) {
         if (vp == null) {
             throw new IllegalStateException("ViewPager can not be NULL !");
@@ -222,10 +250,12 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         notifyDataSetChanged();
     }
 
-    /** 更新数据 */
+    /**
+     * 更新数据
+     */
     public void notifyDataSetChanged() {
         mTabsContainer.removeAllViews();
-        this.mTabCount = mTitles == null ? mViewPager.getAdapter().getCount() : mTitles.size();
+        this.mTabCount = mTitles == null ? (mViewPager.getAdapter().getCount()) : mTitles.size();
         View tabView;
         for (int i = 0; i < mTabCount; i++) {
             tabView = View.inflate(mContext, R.layout.layout_tab, null);
@@ -249,7 +279,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         updateTabStyles();
     }
 
-    /** 创建并添加tab */
+    /**
+     * 创建并添加tab
+     */
     private void addTab(final int position, String title, View tabView) {
         TextView tv_tab_title = (TextView) tabView.findViewById(R.id.tv_tab_title);
         if (tv_tab_title != null) {
@@ -261,19 +293,37 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
             public void onClick(View v) {
                 int position = mTabsContainer.indexOfChild(v);
                 if (position != -1) {
-                    if (mViewPager.getCurrentItem() != position) {
-                        if (mSnapOnTabClick) {
-                            mViewPager.setCurrentItem(position, false);
-                        } else {
-                            mViewPager.setCurrentItem(position);
-                        }
+                    if (mViewPager!=null){
+                        if (mViewPager.getCurrentItem() != position) {
+                            if (mSnapOnTabClick) {
+                                mViewPager.setCurrentItem(position, false);
+                            } else {
+                                mViewPager.setCurrentItem(position);
+                            }
 
-                        if (mListener != null) {
-                            mListener.onTabSelect(position);
+                            if (mListener != null) {
+                                mListener.onTabSelect(position);
+                            }
+                        } else {
+                            if (mListener != null) {
+                                mListener.onTabReselect(position);
+                            }
                         }
-                    } else {
-                        if (mListener != null) {
-                            mListener.onTabReselect(position);
+                    }else if (mViewPager2!=null){
+                        if (mViewPager2.getCurrentItem() != position) {
+                            if (mSnapOnTabClick) {
+                                mViewPager2.setCurrentItem(position, false);
+                            } else {
+                                mViewPager2.setCurrentItem(position);
+                            }
+
+                            if (mListener != null) {
+                                mListener.onTabSelect(position);
+                            }
+                        } else {
+                            if (mListener != null) {
+                                mListener.onTabReselect(position);
+                            }
                         }
                     }
                 }
@@ -334,7 +384,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
     public void onPageScrollStateChanged(int state) {
     }
 
-    /** HorizontalScrollView滚到当前tab,并且居中显示 */
+    /**
+     * HorizontalScrollView滚到当前tab,并且居中显示
+     */
     private void scrollToCurrentTab() {
         if (mTabCount <= 0) {
             return;
@@ -799,7 +851,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         showMsg(position, 0);
     }
 
-    /** 隐藏未读消息 */
+    /**
+     * 隐藏未读消息
+     */
     public void hideMsg(int position) {
         if (position >= mTabCount) {
             position = mTabCount - 1;
@@ -812,7 +866,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         }
     }
 
-    /** 设置未读消息偏移,原点为文字的右上角.当控件高度固定,消息提示位置易控制,显示效果佳 */
+    /**
+     * 设置未读消息偏移,原点为文字的右上角.当控件高度固定,消息提示位置易控制,显示效果佳
+     */
     public void setMsgMargin(int position, float leftPadding, float bottomPadding) {
         if (position >= mTabCount) {
             position = mTabCount - 1;
@@ -831,7 +887,9 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         }
     }
 
-    /** 当前类只提供了少许设置未读消息属性的方法,可以通过该方法获取MsgView对象从而各种设置 */
+    /**
+     * 当前类只提供了少许设置未读消息属性的方法,可以通过该方法获取MsgView对象从而各种设置
+     */
     public MsgView getMsgView(int position) {
         if (position >= mTabCount) {
             position = mTabCount - 1;
@@ -884,6 +942,76 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
         }
     }
 
+    class InnerPager2Adapter extends FragmentStateAdapter {
+        private ArrayList<Fragment> fragments = new ArrayList<>();
+//        private String[] titles;
+
+        /**
+         * @param fragmentActivity if the {@link ViewPager2} lives directly in a
+         *                         {@link FragmentActivity} subclass.
+         * @see FragmentStateAdapter#FragmentStateAdapter(Fragment)
+         * @see FragmentStateAdapter#FragmentStateAdapter(FragmentManager, Lifecycle)
+         */
+        public InnerPager2Adapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
+        }
+
+        /**
+         * @param fragment if the {@link ViewPager2} lives directly in a {@link Fragment} subclass.
+         * @see FragmentStateAdapter#FragmentStateAdapter(FragmentActivity)
+         * @see FragmentStateAdapter#FragmentStateAdapter(FragmentManager, Lifecycle)
+         */
+        public InnerPager2Adapter(@NonNull Fragment fragment) {
+            super(fragment);
+        }
+
+        /**
+         * @param fragmentManager of {@link ViewPager2}'s host
+         * @param lifecycle       of {@link ViewPager2}'s host
+         * @see FragmentStateAdapter#FragmentStateAdapter(FragmentActivity)
+         * @see FragmentStateAdapter#FragmentStateAdapter(Fragment)
+         */
+        public InnerPager2Adapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
+            super(fragmentManager, lifecycle);
+        }
+
+
+        /**
+         * Provide a new Fragment associated with the specified position.
+         * <p>
+         * The adapter will be responsible for the Fragment lifecycle:
+         * <ul>
+         * <li>The Fragment will be used to display an item.</li>
+         * <li>The Fragment will be destroyed when it gets too far from the viewport, and its state
+         * will be saved. When the item is close to the viewport again, a new Fragment will be
+         * requested, and a previously saved state will be used to initialize it.
+         * </ul>
+         *
+         * @param position
+         * @see ViewPager2#setOffscreenPageLimit
+         */
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            return fragments.get(position);
+        }
+
+        /**
+         * Returns the total number of items in the data set held by the adapter.
+         *
+         * @return The total number of items in this adapter.
+         */
+        @Override
+        public int getItemCount() {
+            return fragments.size();
+        }
+
+        public void setData(@NonNull ArrayList<Fragment> fragments) {
+            this.fragments.clear();
+            this.fragments.addAll(fragments);
+        }
+    }
+
     @Override
     protected Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
@@ -914,5 +1042,111 @@ public class SlidingTabLayout extends HorizontalScrollView implements ViewPager.
     protected int sp2px(float sp) {
         final float scale = this.mContext.getResources().getDisplayMetrics().scaledDensity;
         return (int) (sp * scale + 0.5f);
+    }
+
+    /**
+     * 关联ViewPager2,用于不想在ViewPager2适配器中设置titles数据的情况
+     */
+    public void setViewPager2(ViewPager2 vp, String[] titles) {
+        if (vp == null || vp.getAdapter() == null) {
+            throw new IllegalStateException("ViewPager or ViewPager adapter can not be NULL !");
+        }
+
+        if (titles == null || titles.length == 0) {
+            throw new IllegalStateException("Titles can not be EMPTY !");
+        }
+
+        if (titles.length != vp.getAdapter().getItemCount()) {
+            throw new IllegalStateException("Titles length must be the same as the page count !");
+        }
+
+        this.mViewPager2 = vp;
+        mTitles = new ArrayList<>();
+        Collections.addAll(mTitles, titles);
+
+        if (mOnPageChangeCallback == null) {
+            mOnPageChangeCallback = new OnPageChangeCallback();
+        }
+        this.mViewPager2.unregisterOnPageChangeCallback(mOnPageChangeCallback);
+        this.mViewPager2.registerOnPageChangeCallback(mOnPageChangeCallback);
+        notifyDataSetChanged();
+    }
+
+    /**
+     * 关联ViewPager2,用于连适配器都不想自己实例化的情况
+     */
+    public void setViewPager2(ViewPager2 vp, String[] titles, FragmentActivity fa, ArrayList<Fragment> fragments) {
+        if (vp == null) {
+            throw new IllegalStateException("ViewPager can not be NULL !");
+        }
+
+        if (titles == null || titles.length == 0) {
+            throw new IllegalStateException("Titles can not be EMPTY !");
+        }
+        this.mViewPager2 = vp;
+        mTitles = new ArrayList<>();
+        Collections.addAll(mTitles, titles);
+        InnerPager2Adapter innerPager2Adapter = new InnerPager2Adapter(fa.getSupportFragmentManager(), fa.getLifecycle());
+        innerPager2Adapter.setData(fragments);
+        this.mViewPager2.setAdapter(innerPager2Adapter);
+        if (mOnPageChangeCallback == null) {
+            mOnPageChangeCallback = new OnPageChangeCallback();
+        }
+        this.mViewPager2.unregisterOnPageChangeCallback(mOnPageChangeCallback);
+        this.mViewPager2.registerOnPageChangeCallback(mOnPageChangeCallback);
+        notifyDataSetChanged();
+    }
+
+    private class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
+        public OnPageChangeCallback() {
+            super();
+        }
+
+        /**
+         * This method will be invoked when the current page is scrolled, either as part
+         * of a programmatically initiated smooth scroll or a user initiated touch scroll.
+         *
+         * @param position             Position index of the first page currently being displayed.
+         *                             Page position+1 will be visible if positionOffset is nonzero.
+         * @param positionOffset       Value from [0, 1) indicating the offset from the page at position.
+         * @param positionOffsetPixels Value in pixels indicating the offset from position.
+         */
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            /**
+             * position:当前View的位置
+             * mCurrentPositionOffset:当前View的偏移量比例.[0,1)
+             */
+            SlidingTabLayout.this.mCurrentTab = position;
+            SlidingTabLayout.this.mCurrentPositionOffset = positionOffset;
+            scrollToCurrentTab();
+            invalidate();
+        }
+
+        /**
+         * This method will be invoked when a new page becomes selected. Animation is not
+         * necessarily complete.
+         *
+         * @param position Position index of the new selected page.
+         */
+        @Override
+        public void onPageSelected(int position) {
+            super.onPageSelected(position);
+            updateTabSelection(position);
+        }
+
+        /**
+         * Called when the scroll state changes. Useful for discovering when the user begins
+         * dragging, when a fake drag is started, when the pager is automatically settling to the
+         * current page, or when it is fully stopped/idle. {@code state} can be one of {@link
+         * #SCROLL_STATE_IDLE}, {@link #SCROLL_STATE_DRAGGING} or {@link #SCROLL_STATE_SETTLING}.
+         *
+         * @param state
+         */
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            super.onPageScrollStateChanged(state);
+        }
     }
 }

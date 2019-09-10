@@ -1,6 +1,7 @@
 # FlycoTabLayout
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-FlycoTabLayout-green.svg?style=true)](https://android-arsenal.com/details/1/2756)
-#### [中文版](https://github.com/H07000223/FlycoTabLayout/blob/master/README_CN.md)
+[![](https://www.jitpack.io/v/Citrussss/FlycoTabLayout.svg)](https://www.jitpack.io/#Citrussss/FlycoTabLayout)
+#### [中文版](https://github.com/Citrussss/FlycoTabLayout/blob/master/README_CN.md)
 An Android TabLayout Lib has 3 kinds of TabLayout at present.
 
 * SlidingTabLayout: deeply modified from [PagerSlidingTabStrip](https://github.com/jpardogo/PagerSlidingTabStrip).
